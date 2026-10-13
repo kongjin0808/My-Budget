@@ -10,7 +10,7 @@
  */
 
 // >>> CHANGE THIS to a long random string, and enter the same value in the app's Settings.
-const TOKEN = 'CHANGE_ME_TO_A_LONG_RANDOM_STRING';
+const TOKEN = 'KongJin2004';
 
 const SCHEMA = {
   Expenses:    { headers: ['Date', 'Breakfast', 'Lunch', 'Dinner', 'Others', 'OthersNote', 'Total'], textCols: [1] },
