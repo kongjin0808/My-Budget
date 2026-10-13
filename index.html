@@ -70,12 +70,48 @@ input.money{text-align:right;font-variant-numeric:tabular-nums}
 .inv-head span:nth-child(2),.inv-head span:nth-child(3){text-align:right;padding-right:11px}
 .inv-row{margin-bottom:8px}
 #invAdd,#todoAdd{margin-top:4px}
-.todo-row{display:grid;grid-template-columns:1fr 112px;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}
-.todo-row:first-child{padding-top:0}
-.todo-row .meta{grid-column:1/-1;display:flex;gap:10px;align-items:center}
-.todo-row .meta .dl{flex:1}
-.chk{display:flex;align-items:center;gap:6px;font-size:.9rem;color:var(--text);margin:0;font-weight:600;white-space:nowrap}
+/* to do: everything on one line */
+.todo-head,.todo-row{display:grid;grid-template-columns:minmax(0,1fr) 84px 130px 30px 28px;gap:4px;align-items:center}
+.todo-head{font-size:.78rem;color:var(--muted);font-weight:600;padding:0 0 4px}
+.todo-head span:nth-child(2){text-align:right;padding-right:7px}
+.todo-head span:nth-child(4){text-align:center}
+.todo-row{margin-bottom:8px}
+.todo-row input:not([type=checkbox]){font-size:.85rem;padding:8px 6px;min-height:40px}
+.todo-row input[type=checkbox]{justify-self:center}
+.todo-row .icon-btn{width:28px;height:40px;font-size:1.3rem}
 .todo-row.done .aspect,.todo-row.done .amt{text-decoration:line-through;color:var(--muted)}
+@media (max-width:480px){
+  main{padding-left:10px;padding-right:10px}
+  #page-todo .card{padding:12px 10px}
+  .todo-head,.todo-row{grid-template-columns:minmax(0,1fr) 66px 92px 28px 24px}
+  .todo-row input[type=date]::-webkit-calendar-picker-indicator{display:none}
+  .todo-row .icon-btn{width:24px}
+}
+
+/* expenses calendar */
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal-dow{font-size:.7rem;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px}
+.cal-cell{position:relative;font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:8px;
+  padding:4px 2px 3px;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;cursor:pointer}
+.cal-cell .d{font-size:.78rem;font-weight:600;color:var(--muted)}
+.cal-cell .v{font-family:var(--serif);font-variant-numeric:lining-nums tabular-nums;font-size:.68rem;font-weight:700;min-height:.9em;line-height:1.1}
+.cal-cell .o{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:#E0A100}
+.cal-cell.today{border-color:var(--primary)}
+.cal-cell.today .d{color:var(--primary)}
+.cal-cell.over .v{color:var(--danger)}
+.cal-cell.sel{background:var(--primary);border-color:var(--primary)}
+.cal-cell.sel .d,.cal-cell.sel .v{color:var(--on-primary)}
+.cal-cell.sel.over{background:var(--danger);border-color:var(--danger)}
+
+/* other spending list */
+.oth-list{list-style:none;margin:0;padding:0}
+.oth-item,.oth-empty{display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line)}
+.oth-item .dt{flex:none;width:54px;font-size:.82rem;color:var(--muted);font-weight:600}
+.oth-item .nm{flex:1;min-width:0;overflow-wrap:anywhere;font-size:.95rem}
+.oth-item .am{font-family:var(--serif);font-variant-numeric:lining-nums tabular-nums}
+.muted{color:var(--muted)}
+.ledger .line.key:first-child{border-top:0;margin-top:0;padding-top:8px}
+.secret{-webkit-text-security:disc}
 .todo-tools{display:flex;justify-content:space-between;align-items:center;margin:0 0 12px}
 
 /* ledger-style results: the one distinctive element */
@@ -154,6 +190,20 @@ input.money{text-align:right;font-variant-numeric:tabular-nums}
       <button class="btn ghost full" id="saveBudgets">Save as defaults</button>
     </div>
 
+    <div class="card">
+      <h2 id="calTitle">Calendar</h2>
+      <div class="cal-grid" id="calGrid"></div>
+      <p class="hint">Each day shows your meals total (breakfast, lunch, dinner). Red means over your daily budget. A dot marks a day with other spending. Tap a day to open it.</p>
+    </div>
+
+    <div class="card">
+      <h2>Other spending</h2>
+      <ul class="oth-list" id="othList"></ul>
+      <div class="ledger">
+        <div class="line key"><span id="othTotalLabel">Total this month</span><i></i><b id="outOthTotal">0.00</b></div>
+      </div>
+    </div>
+
     <div class="card" id="expEntry">
       <h2>Daily spending</h2>
       <label for="expDate">Date</label>
@@ -166,6 +216,7 @@ input.money{text-align:right;font-variant-numeric:tabular-nums}
         <input id="inOthers" class="money" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0.00">
         <input id="inOthersNote" type="text" placeholder="What was it?" maxlength="80" aria-label="Description of other spending">
       </div>
+      <p class="hint" style="margin:0 0 4px">Others is tracked separately. It is not counted in today's spending, savings or budgets.</p>
 
       <div class="ledger">
         <div class="line"><span>Today's spending</span><i></i><b id="outSpend">0.00</b></div>
@@ -217,6 +268,7 @@ input.money{text-align:right;font-variant-numeric:tabular-nums}
         <button class="link-btn" id="todoCopy">Copy from previous month</button>
       </div>
 
+      <div class="todo-head"><span>Aspect</span><span>Amount</span><span>Dateline</span><span>Paid</span><span></span></div>
       <div id="todoRows"></div>
       <button class="btn ghost full" id="todoAdd">Add row</button>
 
@@ -254,7 +306,7 @@ input.money{text-align:right;font-variant-numeric:tabular-nums}
     <div class="chart-box"><canvas id="cvExpDaily"></canvas></div>
     <h3>Monthly savings this year</h3>
     <div class="chart-box"><canvas id="cvExpMonthly"></canvas></div>
-    <p class="hint">Uses the budgets currently in the fields. Days and months with no saved entry are left out.</p>
+    <p class="hint">Uses the budgets currently in the fields. Days and months with no saved entry are left out. Other spending is not counted.</p>
   </div>
 </div>
 
@@ -265,6 +317,9 @@ input.money{text-align:right;font-variant-numeric:tabular-nums}
     <h3>Share of total money by aspect</h3>
     <div class="chart-box"><canvas id="cvPie"></canvas></div>
     <p class="hint" id="pieEmpty" hidden>Add a row with an amount to see the breakdown.</p>
+    <h3>Amount and grow by aspect</h3>
+    <div class="chart-box"><canvas id="cvBar"></canvas></div>
+    <p class="hint" id="barEmpty" hidden>Add a row to see this chart.</p>
     <div class="row-between">
       <h3 style="margin:0">Portfolio value over time</h3>
       <select id="invGroup" aria-label="Group by"><option value="day">By day</option><option value="month">By month</option></select>
@@ -282,7 +337,7 @@ input.money{text-align:right;font-variant-numeric:tabular-nums}
     <div class="field"><label for="cfgUrl">Apps Script web app URL</label>
       <input id="cfgUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" autocapitalize="off"></div>
     <div class="field"><label for="cfgToken">Secret token (same as TOKEN in Code.gs)</label>
-      <input id="cfgToken" type="password" autocomplete="off"></div>
+      <input id="cfgToken" class="secret" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
     <div class="field"><label for="cfgCur">Currency label</label>
       <input id="cfgCur" type="text" maxlength="4" placeholder="RM, $, EUR"></div>
     <div class="actions">
@@ -435,9 +490,11 @@ const PALETTE = ['#1F5C48','#E0A100','#3C8D73','#C0352B','#7A8F2B','#2F6F9F','#A
    PAGE 1: EXPENSES
    ========================================================= */
 const E = { cache: {} };                       // 'YYYY-MM' -> { 'YYYY-MM-DD': row }
-const expIds = ['inBreakfast', 'inLunch', 'inDinner', 'inOthers'];
-
-const expSpend = () => r2(expIds.reduce((s, id) => s + num($('#' + id).value), 0));
+const mealIds = ['inBreakfast', 'inLunch', 'inDinner'];      // "Others" is deliberately NOT counted
+const mealsOf = r => r2(num(r.breakfast) + num(r.lunch) + num(r.dinner));
+const expSpend = () => r2(mealIds.reduce((s, id) => s + num($('#' + id).value), 0));
+const MON  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MON3 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function setFig(sel, v, signed) {
   const el = $(sel);
@@ -451,10 +508,76 @@ function calcExp() {
   const daily = num($('#dailyBudget').value), monthly = num($('#monthlyBudget').value);
   const map = E.cache[month] || {};
   let others = 0;                               // every saved day except the one on screen
-  for (const d in map) if (d !== date) others += num(map[d].total);
+  for (const d in map) if (d !== date) others += mealsOf(map[d]);
   setFig('#outSpend', spend, false);
   setFig('#outDaySave', r2(daily - spend), true);
   setFig('#outMonthSave', r2(monthly - others - spend), true);
+  renderCalendar();
+  renderOther();
+}
+
+/* What to show for one date: the saved row, or the live inputs if it is the selected day. */
+function dayView(date) {
+  if (date === $('#expDate').value) {
+    const meals = expSpend(), oth = r2(num($('#inOthers').value));
+    const row = (E.cache[date.slice(0, 7)] || {})[date];
+    return { meals, others: oth, note: $('#inOthersNote').value.trim(), has: !!row || meals > 0 || oth > 0 };
+  }
+  const r = (E.cache[date.slice(0, 7)] || {})[date];
+  return r ? { meals: mealsOf(r), others: num(r.others), note: r.note || '', has: true }
+           : { meals: 0, others: 0, note: '', has: false };
+}
+const compact = v => v >= 1000 ? String(Math.round(v)) : v.toFixed(2);
+
+function renderCalendar() {
+  const sel = $('#expDate').value;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(sel)) return;
+  const [y, m] = sel.split('-').map(Number);
+  const key = `${y}-${pad(m)}`, grid = $('#calGrid');
+  const daily = num($('#dailyBudget').value), today = todayStr();
+  $('#calTitle').textContent = `${MON[m - 1]} ${y}`;
+  if (grid.dataset.month !== key) {              // rebuild only when the month changes, so taps are never lost
+    const first = new Date(y, m - 1, 1).getDay(); // 0 = Sunday
+    let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<span class="cal-dow">${d}</span>`).join('');
+    html += '<span></span>'.repeat(first);
+    for (let d = 1; d <= daysIn(y, m); d++) {
+      const date = `${key}-${pad(d)}`;
+      html += `<button type="button" class="cal-cell" data-date="${date}" aria-label="${date}"><span class="d">${d}</span><span class="v"></span><span class="o" hidden></span></button>`;
+    }
+    grid.innerHTML = html;
+    grid.dataset.month = key;
+  }
+  $$('.cal-cell', grid).forEach(b => {
+    const date = b.dataset.date, v = dayView(date);
+    b.classList.toggle('today', date === today);
+    b.classList.toggle('sel', date === sel);
+    b.classList.toggle('over', v.has && daily > 0 && v.meals > daily);
+    $('.v', b).textContent = v.has ? compact(v.meals) : '';
+    $('.o', b).hidden = !(v.others > 0);
+  });
+}
+
+function renderOther() {
+  const sel = $('#expDate').value;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(sel)) return;
+  const month = sel.slice(0, 7), m = Number(month.slice(5));
+  const dates = new Set(Object.keys(E.cache[month] || {}));
+  dates.add(sel);
+  const items = [...dates].sort().map(d => ({ d, ...dayView(d) })).filter(x => x.others > 0);
+  $('#othList').innerHTML = items.length
+    ? items.map(x => `<li class="oth-item"><span class="dt">${Number(x.d.slice(8))} ${MON3[m - 1]}</span><span class="nm">${esc(x.note) || '<span class="muted">No description</span>'}</span><b class="am">${money(x.others)}</b></li>`).join('')
+    : '<li class="oth-empty muted">No other spending saved for this month yet.</li>';
+  $('#othTotalLabel').textContent = `Total other spending, ${MON[m - 1]}`;
+  setFig('#outOthTotal', r2(items.reduce((s, x) => s + x.others, 0)), false);
+}
+
+function selectExpDate(d) {
+  const el = $('#expDate');
+  if (d === el.value) return;
+  if (dirty.exp && !confirm('You have unsaved changes. Discard them?')) return;
+  el.value = d; el.dataset.prev = d;
+  loadExpDay();
+  $('#expEntry').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 async function loadExpMonth(month, force) {
   if (!force && E.cache[month]) return E.cache[month];
@@ -519,13 +642,13 @@ async function showExpSummary() {
   const dayMap = {};
   (byMonth[mk] || []).forEach(r => dayMap[r.date] = r);
   const dayLabels = Array.from({ length: daysIn(y, m) }, (_, i) => i + 1);
-  const dayData = dayLabels.map(d => { const r = dayMap[`${mk}-${pad(d)}`]; return r ? r2(daily - num(r.total)) : null; });
+  const dayData = dayLabels.map(d => { const r = dayMap[`${mk}-${pad(d)}`]; return r ? r2(daily - mealsOf(r)) : null; });
   draw('cvExpDaily', lineConfig(dayLabels, dayData, 'Daily savings'));
 
   const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const monData = mNames.map((_, i) => {
     const list = byMonth[`${y}-${pad(i + 1)}`];
-    return list ? r2(monthly - list.reduce((s, r) => s + num(r.total), 0)) : null;
+    return list ? r2(monthly - list.reduce((s, r) => s + mealsOf(r), 0)) : null;
   });
   draw('cvExpMonthly', lineConfig(mNames, monData, 'Monthly savings'));
 }
@@ -625,6 +748,36 @@ function drawPie() {
     }
   });
 }
+function drawBar() {
+  const agg = new Map();
+  readInv().forEach(r => {
+    if (!r.aspect) return;
+    const k = r.aspect.toLowerCase();
+    const cur = agg.get(k) || { name: r.aspect, amount: 0, grow: 0 };
+    cur.amount += r.amount; cur.grow += r.grow; agg.set(k, cur);
+  });
+  const items = [...agg.values()];
+  $('#barEmpty').hidden = items.length > 0;
+  if (!items.length) { if (charts.cvBar) { charts.cvBar.destroy(); delete charts.cvBar; } return; }
+  draw('cvBar', {
+    type: 'bar',
+    data: { labels: items.map(i => i.name), datasets: [
+      { label: 'Amount', data: items.map(i => r2(i.amount)), backgroundColor: cssv('--primary'), borderRadius: 4 },
+      { label: 'Grow',   data: items.map(i => r2(i.grow)),   backgroundColor: '#E0A100',         borderRadius: 4 }
+    ] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: {
+          label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}`,
+          footer: list => 'Total money: ' + money(list.reduce((s, i) => s + i.parsed.y, 0))
+        } }
+      },
+      scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: cssv('--line') } } }
+    }
+  });
+}
 function drawInvLine() {
   const mode = $('#invGroup').value;
   const dates = Object.keys(I.byDate).sort();
@@ -644,6 +797,7 @@ async function showInvSummary() {
   openModal('modalInv');
   if (connected()) { try { await loadInvAll(); } catch (e) { toast(e.message, true); } }
   drawPie();
+  drawBar();
   drawInvLine();
 }
 
@@ -667,11 +821,9 @@ function addTodoRow(d = {}) {
     `<div class="todo-row${d.paid ? ' done' : ''}">
       <input class="aspect" type="text" placeholder="e.g. Rental" value="${esc(d.aspect)}" aria-label="Aspect">
       <input class="money amt" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0.00" value="${fv(d.amount)}" aria-label="Amount">
-      <div class="meta">
-        <input class="dl" type="date" value="${esc(d.dateline)}" aria-label="Dateline">
-        <label class="chk"><input class="paid" type="checkbox"${d.paid ? ' checked' : ''}> Paid</label>
-        <button class="icon-btn del" aria-label="Remove row">&times;</button>
-      </div>
+      <input class="dl" type="date" value="${esc(d.dateline)}" aria-label="Dateline">
+      <input class="paid" type="checkbox"${d.paid ? ' checked' : ''} aria-label="Paid">
+      <button class="icon-btn del" aria-label="Remove row">&times;</button>
     </div>`);
 }
 function readTodo() {
@@ -767,6 +919,10 @@ function init() {
   });
   $('#expSave').addEventListener('click', e => withBusy(e.currentTarget, 'Saving\u2026', saveExpDay));
   $('#expSummary').addEventListener('click', showExpSummary);
+  $('#calGrid').addEventListener('click', e => {
+    const b = e.target.closest('.cal-cell');
+    if (b) selectExpDate(b.dataset.date);
+  });
 
   // Page 2
   guarded($('#invDate'), 'inv', loadInvDate);
@@ -829,6 +985,7 @@ function init() {
   show(LS.get('lastPage', 'expenses'));
   if (!connected()) openSettings();
 
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
